@@ -47,17 +47,11 @@ app.config["SECRET_KEY"] = "kjasdhlundaujw"
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get("token")
+        token = request.headers.get("Authorization")
         if not token:
             return jsonify({"message": "token is missing"}), 403
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"])
-            expiration_time = data.get("exp")
-            current_time = datetime.utcnow()
-            if current_time > expiration_time:
-                return jsonify({"message": "token has expired"}), 403
-        except jwt.ExpiredSignatureError:
-            return jsonify({"message": "token has expired"}), 403
         except:
             return jsonify({"message": "invalid token"}), 403
         return f(*args, **kwargs)
@@ -150,9 +144,9 @@ def login():
     conn.commit()
     if result and result[1] == password:
         # Username and password match -> geenrate token
-        expiration_time = datetime.utcnow() + timedelta(hours=1)
+
         token = jwt.encode(
-            {"token ": "session", "exp": expiration_time},
+            {"token ": "session"},
             app.config["SECRET_KEY"],
         )
         return jsonify(
@@ -178,7 +172,7 @@ def signup():
     data = request.get_json()  # Retrieve JSON data from request body
     username = data.get("username")  # Get 'usr' from JSON data
     password = data.get("password")  # Get 'pwd' from JSON data
-    email = data.get("email")
+    email = data.get("email")  # Get 'email' from JSON data
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     cursor.execute(
