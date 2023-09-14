@@ -179,7 +179,8 @@ def signup():
     username = data.get("username")  # Get 'usr' from JSON data
     password = data.get("password")  # Get 'pwd' from JSON data
     email = data.get("email")
-
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO users (username, password,email) VALUES (%s, %s,%s)",
         (username, password, email),
